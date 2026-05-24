@@ -128,23 +128,7 @@ FEEDS_RSS_EXTRAS = [
         "nome":  "Neofeed",
         "url":   "https://neofeed.com.br/feed/",
         "ativo": True,
-    },
-    # ── Outros feeds disponíveis (ative mudando para True) ───────────────────
-    {
-        "nome":  "Valor Econômico",
-        "url":   "https://valor.globo.com/rss/ultimas-noticias/",
-        "ativo": False,
-    },
-    {
-        "nome":  "Estadão Economia",
-        "url":   "https://economia.estadao.com.br/rss2.xml",
-        "ativo": False,
-    },
-    {
-        "nome":  "Folha Mercado",
-        "url":   "https://feeds.folha.uol.com.br/mercado/rss091.xml",
-        "ativo": False,
-    },
+    }
 ]
 
 # ── API da CVM — Fatos Relevantes Oficiais ───────────────────────────────────
