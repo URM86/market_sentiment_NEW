@@ -1,3 +1,4 @@
+# Análise de Sentimento de Mercado — Ações B3
 
 Coleta notícias via Google News RSS e fontes especializadas como Bloomberg Línea Brasil, InfoMoney, Brazil Journal e NeoFeed, além de fatos relevantes oficiais publicados na CVM, para calcular _scores_ de sentimento aplicados à análise de ações da B3 utilizando os modelos **FinBERT** e **BART-large-MNLI** disponibilizados pela plataforma Hugging Face.
 
@@ -18,7 +19,7 @@ Para cada ação monitorada, o sistema executa automaticamente três etapas:
 - **InfoMoney** — feed RSS do maior portal de finanças pessoais do Brasil
 - **Brazil Journal** — feed RSS do portal especializado em negócios e mercado de capitais
 - **NeoFeed** — feed RSS do portal focado em empreendedorismo, inovação e finanças
-- **CVM — Dados Abertos** — fatos relevantes, comunicados ao mercado e documentos regulatórios consultados diretamente via API pública da Comissão de Valores Mobiliários, filtrados pelo CNPJ de cada empresa
+- **CVM — Dados Abertos** — fatos relevantes, comunicados ao mercado e documentos regulatórios consultados diretamente via API pública da Comissão de Valores Mobiliários, filtrados pelo CNPJ de cada empresa (Esta etapa ainda está em construção)
 
 Cada artigo é deduplicado por hash MD5 da URL. Artigos já processados em execuções anteriores são ignorados automaticamente para evitar retrabalho.
 
@@ -38,7 +39,7 @@ Se o score de confiança do modelo vencedor for inferior a 50%, o resultado é m
 
 ---
 
-## Ações monitoradas
+## Ações Monitoradas
 
 | Ticker | Empresa |
 |--------|---------|
@@ -51,14 +52,14 @@ Se o score de confiança do modelo vencedor for inferior a 50%, o resultado é m
 | TAEE4 | Taesa PN |
 | ABCB4 | ABC Brasil PN |
 | CMIG4 | Cemig PN |
-| SAUD3 | Hypera Pharma |
-| PASS3 | Azul Linhas Aéreas |
+| SAUD3 | Bradsaúde ON |
+| PASS3 | Compass Gas e Energia S.A |
 | CSAN3 | Cosan |
 | PMAM3 | Paranapanema |
 
 ---
 
-## Estrutura de arquivos
+## Estrutura de Arquivos
 
 ```
 market_sentiment/
@@ -92,9 +93,6 @@ market_sentiment/
 ## Pré-requisitos
 
 - **Python 3.10 ou superior** — verifique com `python --version`
-- **Conexão com a internet** — necessária para coletar notícias e baixar os modelos na primeira execução
-- **Espaço em disco** — ~2 GB para os modelos (baixados uma única vez e armazenados em `~/.cache/huggingface/`)
-- **VSCode** (opcional, mas recomendado) com a extensão [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python)
 
 ---
 
@@ -119,24 +117,6 @@ Sem ambiente virtual (mais simples):
 pip install -r requirements.txt
 ```
 
-Com ambiente virtual (recomendado para não interferir em outros projetos):
-
-```bash
-# Criar o ambiente
-python -m venv .venv
-
-# Ativar — Windows
-.venv\Scripts\activate
-
-# Ativar — Linux / macOS
-source .venv/bin/activate
-
-# Instalar
-pip install -r requirements.txt
-```
-
-> A instalação do PyTorch + Transformers pode levar alguns minutos dependendo da velocidade da internet.
-
 ---
 
 ## Como executar
@@ -154,20 +134,6 @@ python main.py
 ```bash
 python main.py --tickers BBDC4 ITSA4 CSAN3
 ```
-
-### Modo daemon — execução automática em loop
-
-Repete a análise automaticamente no intervalo configurado (padrão: 60 minutos). Útil para monitoramento contínuo durante o pregão.
-
-```bash
-# Loop a cada 60 minutos (padrão)
-python main.py --daemon
-
-# Loop com intervalo personalizado (ex: a cada 30 minutos)
-python main.py --daemon --intervalo 30
-```
-
-Pressione `Ctrl + C` para parar.
 
 ### Desativar a tradução automática
 
@@ -195,31 +161,6 @@ O arquivo `.vscode/launch.json` já contém cinco configurações prontas:
 | 🔄 Daemon Mode (60 min) | Loop automático a cada hora |
 | ⚡ Sem tradução (rápido) | Todos os tickers sem traduzir |
 | 🧪 Teste – ITSA4 CSAN3 CMIG4 | Subset de 3 tickers para testes rápidos |
-
----
-
-## Primeira execução — o que esperar
-
-Na primeira vez que rodar, o sistema vai baixar automaticamente os dois modelos do Hugging Face:
-
-- `facebook/bart-large-mnli` → ~1,6 GB (pode levar 5–15 minutos)
-- `ProsusAI/finbert` → ~400 MB (mais rápido)
-
-Os modelos são salvos em `~/.cache/huggingface/` e **não são baixados novamente** nas execuções seguintes.
-
-Durante a análise, o terminal exibirá uma tabela como esta para cada ticker:
-
-```
-──────────────────────── BBDC4 ────────────────────────
-╭──────────┬──────────────────────────┬────────┬─────────┬──────────┬──────────────┬──────╮
-│ Data     │ Título                   │  BART  │ FinBERT │ Vencedor │ Sentimento   │ Conf │
-├──────────┼──────────────────────────┼────────┼─────────┼──────────┼──────────────┼──────┤
-│ 2026-05  │ Bradesco bate expectat.. │POS 87% │ POS 74% │ ✔ BART   │ 📈 POSITIVO  │  87% │
-│ 2026-05  │ Analistas cortam preço.. │NEU 55% │ NEG 91% │  FinBERT │ 📉 NEGATIVO  │  91% │
-╰──────────┴──────────────────────────┴────────┴─────────┴──────────┴──────────────┴──────╯
-```
-
-E ao final, um resumo geral de todos os tickers com sentimento predominante e estatísticas de concordância entre os modelos.
 
 ---
 
@@ -329,7 +270,6 @@ TRADUZIR_PARA_INGLES = False
 
 ## Referências
 
-- [B3Analysis](https://github.com/guhcostan/b3analysis) — inspiração para o projeto
 - [ProsusAI/finbert](https://huggingface.co/ProsusAI/finbert) — modelo FinBERT no Hugging Face
 - [facebook/bart-large-mnli](https://huggingface.co/facebook/bart-large-mnli) — modelo BART no Hugging Face
 - [API de Dados Abertos da CVM](https://dados.cvm.gov.br/) — fatos relevantes e documentos regulatórios
